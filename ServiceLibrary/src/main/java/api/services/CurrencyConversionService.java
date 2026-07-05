@@ -15,4 +15,11 @@ public interface CurrencyConversionService {
 	
 	@GetMapping("/currency-conversion-feign")
 	ResponseEntity<?> getConversionFeign(@RequestParam String from, @RequestParam String to, @RequestParam BigDecimal quantity);
+	
+	@GetMapping("/currency-conversion/user")
+	ResponseEntity<?> convertForUser(
+	        @RequestParam String email,
+	        @RequestParam String from,
+	        @RequestParam String to,
+	        @RequestParam BigDecimal quantity);
 }

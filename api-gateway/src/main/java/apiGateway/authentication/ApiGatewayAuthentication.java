@@ -20,16 +20,18 @@ public class ApiGatewayAuthentication {
 	
 	@Bean
 	SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
-		http
-		.csrf(csrf -> csrf.disable())
-		.authorizeExchange(exchange -> exchange
-				.pathMatchers(HttpMethod.POST).hasRole("ADMIN")
-				.pathMatchers("/currency-exchange").permitAll()
-				.pathMatchers("/currency-conversion").hasRole("USER")
-				.pathMatchers("/users").hasRole("ADMIN")
-				).httpBasic(Customizer.withDefaults());
-		
-		return http.build();
+	    http
+	        .csrf(csrf -> csrf.disable())
+	        .authorizeExchange(exchange -> exchange
+	            .pathMatchers("/currency-exchange/**").hasAnyRole("USER", "ADMIN", "OWNER")
+	            .pathMatchers("/currency-conversion/**").hasAnyRole("USER", "ADMIN", "OWNER")
+	            .pathMatchers("/bank-accounts/**").hasAnyRole("USER", "ADMIN", "OWNER")
+	            .pathMatchers("/users/**").hasAnyRole("ADMIN", "OWNER")
+	            .anyExchange().authenticated()
+	        )
+	        .httpBasic(Customizer.withDefaults());
+
+	    return http.build();
 	}
 	
 	@Bean
@@ -37,7 +39,7 @@ public class ApiGatewayAuthentication {
 //		WebClient client = webClientBuilder.baseUrl("http://localhost:8770").build();
 
 //				Verzija za Docker
-		WebClient client = webClientBuilder.baseUrl("http://users-service:8770").build();
+		WebClient client = webClientBuilder.baseUrl("http://localhost:8770").build();
 		
 		
 		return user -> client.get()

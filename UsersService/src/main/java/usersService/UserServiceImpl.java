@@ -1,6 +1,8 @@
 package usersService;
 
 import java.util.ArrayList;
+import api.dtos.BankAccountDto;
+import api.proxies.BankAccountProxy;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class UserServiceImpl implements UsersService {
 
 	@Autowired
 	private UserRepository repo;
+	
+	@Autowired
+	private BankAccountProxy bankAccountProxy;
 
 	@Override
 	public List<UserDto> getUsers() {
@@ -75,14 +80,18 @@ public class UserServiceImpl implements UsersService {
 
 	@Override
 	public ResponseEntity<?> createUser(UserDto dto) {
-		if (repo.findByEmail(dto.getEmail()) == null) {
-			dto.setRole("USER");
-			UserModel model = convertDtoToModel(dto);
-			return ResponseEntity.status(HttpStatus.CREATED).body(repo.save(model));
-		} else {
-			return ResponseEntity.status(HttpStatus.CONFLICT)
-					.body("User with passed email already exists");
-		}
+	    if (repo.findByEmail(dto.getEmail()) == null) {
+	        dto.setRole("USER");
+	        UserModel model = convertDtoToModel(dto);
+	        UserModel savedUser = repo.save(model);
+
+	        bankAccountProxy.createAccount(new BankAccountDto(dto.getEmail()));
+
+	        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+	    } else {
+	        return ResponseEntity.status(HttpStatus.CONFLICT)
+	                .body("User with passed email already exists");
+	    }
 	}
 
 	@Override
@@ -98,16 +107,20 @@ public class UserServiceImpl implements UsersService {
 
 	@Override
 	public ResponseEntity<?> deleteUser(String email) {
-		UserModel user = repo.findByEmail(email);
+	    UserModel user = repo.findByEmail(email);
 
-		if (user != null) {
-			repo.delete(user);
-			return ResponseEntity.status(HttpStatus.OK)
-					.body("User deleted successfully");
-		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-					.body("User with passed email does not exist");
-		}
+	    if (user != null) {
+	        if (user.getRole().equals("USER")) {
+	            bankAccountProxy.deleteAccount(email);
+	        }
+
+	        repo.delete(user);
+	        return ResponseEntity.status(HttpStatus.OK)
+	                .body("User deleted successfully");
+	    } else {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("User with passed email does not exist");
+	    }
 	}
 
 	public UserDto convertModelToDto(UserModel model) {
