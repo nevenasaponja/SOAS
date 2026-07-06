@@ -2,7 +2,6 @@ package apiGateway.authentication;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -17,80 +16,68 @@ import api.dtos.UserDto;
 @Configuration
 @EnableWebFluxSecurity
 public class ApiGatewayAuthentication {
-	
-	@Bean
-	SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
-	    http
-	        .csrf(csrf -> csrf.disable())
-	        .authorizeExchange(exchange -> exchange
 
-	            .pathMatchers("/currency-exchange/**")
-	            .hasAnyRole("OWNER", "ADMIN", "USER")
+    @Bean
+    SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
 
-	            .pathMatchers("/currency-conversion/**")
-	            .hasRole("USER")
+        return http
+                .csrf(csrf -> csrf.disable())
+                .authorizeExchange(exchange -> exchange
 
-	            .pathMatchers("/bank-accounts/**")
-	            .hasAnyRole("ADMIN", "USER")
+                        // Fiat exchange
+                        .pathMatchers("/currency-exchange/**")
+                        .hasAnyRole("OWNER", "ADMIN", "USER")
 
-	            .pathMatchers("/crypto-wallets/**")
-	            .hasAnyRole("ADMIN", "USER")
+                        // Crypto exchange
+                        .pathMatchers("/crypto-exchange/**")
+                        .hasAnyRole("OWNER", "ADMIN", "USER")
 
-	            .pathMatchers("/users/**")
-	            .hasAnyRole("OWNER", "ADMIN")
+                        // Fiat conversion
+                        .pathMatchers("/currency-conversion/**")
+                        .hasRole("USER")
 
-	            .anyExchange()
-	            .authenticated()
-	        )
-	        .httpBasic(Customizer.withDefaults());
+                        // Bank account
+                        .pathMatchers("/bank-accounts/**")
+                        .hasAnyRole("ADMIN", "USER")
 
-	    return http.build();
-	}
-	
-	@Bean
-	ReactiveUserDetailsService reactiveUserDetailsService(WebClient.Builder webClientBuilder, BCryptPasswordEncoder encoder) {
-//		WebClient client = webClientBuilder.baseUrl("http://localhost:8770").build();
+                        // Crypto wallet
+                        .pathMatchers("/crypto-wallets/**")
+                        .hasAnyRole("ADMIN", "USER")
 
-//				Verzija za Docker
-		WebClient client = webClientBuilder.baseUrl("http://localhost:8770").build();
-		
-		
-		return user -> client.get()
-				.uri(uriBuilder -> uriBuilder
-						.path("/users/email")
-						.queryParam("email", user)
-						.build()
-				)
-				.retrieve()
-				.bodyToMono(UserDto.class)
-				.map(dto -> User.withUsername(dto.getEmail())
-						.password(encoder.encode(dto.getPassword()))
-						.roles(dto.getRole())
-						.build()
-				);
-			
-		}
-		
-		/*ResponseEntity<List<UserDto>> response =
-				new RestTemplate().exchange("http://users-service:8770/users", HttpMethod.GET,
-						null, new ParameterizedTypeReference<List<UserDto>>() {});
-		List<UserDetails> users = new ArrayList<UserDetails>();
-		for(UserDto user : response.getBody()) {
-			users.add(
-					User.withUsername(user.getEmail())
-					.password(encoder.encode(user.getPassword()))
-					.roles(user.getRole())
-					.build());
-				
-		}
-		
-		return new MapReactiveUserDetailsService(users);
-				
-		}*/
-	
-	@Bean
-	BCryptPasswordEncoder getEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+                        // Users
+                        .pathMatchers("/users/**")
+                        .hasAnyRole("OWNER", "ADMIN")
 
+                        .anyExchange()
+                        .authenticated()
+                )
+                .httpBasic(Customizer.withDefaults())
+                .build();
+    }
+
+    @Bean
+    ReactiveUserDetailsService reactiveUserDetailsService(WebClient.Builder webClientBuilder,
+                                                          BCryptPasswordEncoder encoder) {
+
+        WebClient client = webClientBuilder
+                .baseUrl("http://localhost:8770")
+                .build();
+
+        return user -> client.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users/email")
+                        .queryParam("email", user)
+                        .build())
+                .retrieve()
+                .bodyToMono(UserDto.class)
+                .map(dto -> User.withUsername(dto.getEmail())
+                        .password(encoder.encode(dto.getPassword()))
+                        .roles(dto.getRole())
+                        .build());
+    }
+
+    @Bean
+    BCryptPasswordEncoder getEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

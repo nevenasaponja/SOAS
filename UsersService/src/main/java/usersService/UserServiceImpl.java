@@ -1,8 +1,12 @@
 package usersService;
+import api.dtos.CryptoWalletDto;
+import api.proxies.CryptoWalletProxy;
 
 import java.util.ArrayList;
 import api.dtos.BankAccountDto;
 import api.proxies.BankAccountProxy;
+import api.proxies.CryptoWalletProxy;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,9 @@ public class UserServiceImpl implements UsersService {
 	
 	@Autowired
 	private BankAccountProxy bankAccountProxy;
+	
+	@Autowired
+	private CryptoWalletProxy cryptoWalletProxy;
 
 	@Override
 	public List<UserDto> getUsers() {
@@ -86,6 +93,7 @@ public class UserServiceImpl implements UsersService {
 	        UserModel savedUser = repo.save(model);
 
 	        bankAccountProxy.createAccount(new BankAccountDto(dto.getEmail()));
+	        cryptoWalletProxy.createWallet(new CryptoWalletDto(dto.getEmail()));
 
 	        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
 	    } else {
@@ -112,6 +120,7 @@ public class UserServiceImpl implements UsersService {
 	    if (user != null) {
 	        if (user.getRole().equals("USER")) {
 	            bankAccountProxy.deleteAccount(email);
+	            cryptoWalletProxy.deleteWallet(email);
 	        }
 
 	        repo.delete(user);
