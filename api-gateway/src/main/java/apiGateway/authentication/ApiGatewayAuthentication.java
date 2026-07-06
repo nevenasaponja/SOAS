@@ -17,43 +17,47 @@ import api.dtos.UserDto;
 @EnableWebFluxSecurity
 public class ApiGatewayAuthentication {
 
-    @Bean
-    SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
+	@Bean
+	SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
 
-        return http
-                .csrf(csrf -> csrf.disable())
-                .authorizeExchange(exchange -> exchange
+	    return http
+	            .csrf(csrf -> csrf.disable())
+	            .authorizeExchange(exchange -> exchange
 
-                        // Fiat exchange
-                        .pathMatchers("/currency-exchange/**")
-                        .hasAnyRole("OWNER", "ADMIN", "USER")
+	                    // Fiat exchange
+	                    .pathMatchers("/currency-exchange/**")
+	                    .hasAnyRole("OWNER", "ADMIN", "USER")
 
-                        // Crypto exchange
-                        .pathMatchers("/crypto-exchange/**")
-                        .hasAnyRole("OWNER", "ADMIN", "USER")
+	                    // Crypto exchange
+	                    .pathMatchers("/crypto-exchange/**")
+	                    .hasAnyRole("OWNER", "ADMIN", "USER")
 
-                        // Fiat conversion
-                        .pathMatchers("/currency-conversion/**")
-                        .hasRole("USER")
+	                    // Fiat conversion
+	                    .pathMatchers("/currency-conversion/**")
+	                    .hasRole("USER")
 
-                        // Bank account
-                        .pathMatchers("/bank-accounts/**")
-                        .hasAnyRole("ADMIN", "USER")
+	                    // Crypto conversion
+	                    .pathMatchers("/crypto-conversion/**")
+	                    .hasRole("USER")
 
-                        // Crypto wallet
-                        .pathMatchers("/crypto-wallets/**")
-                        .hasAnyRole("ADMIN", "USER")
+	                    // Bank account
+	                    .pathMatchers("/bank-accounts/**")
+	                    .hasAnyRole("ADMIN", "USER")
 
-                        // Users
-                        .pathMatchers("/users/**")
-                        .hasAnyRole("OWNER", "ADMIN")
+	                    // Crypto wallet
+	                    .pathMatchers("/crypto-wallets/**")
+	                    .hasAnyRole("ADMIN", "USER")
 
-                        .anyExchange()
-                        .authenticated()
-                )
-                .httpBasic(Customizer.withDefaults())
-                .build();
-    }
+	                    // Users
+	                    .pathMatchers("/users/**")
+	                    .hasAnyRole("OWNER", "ADMIN")
+
+	                    .anyExchange()
+	                    .authenticated()
+	            )
+	            .httpBasic(Customizer.withDefaults())
+	            .build();
+	}
 
     @Bean
     ReactiveUserDetailsService reactiveUserDetailsService(WebClient.Builder webClientBuilder,
