@@ -8,14 +8,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RoutingConfiguration {
 
-	@Bean
-	RouteLocator gatewayRouting(RouteLocatorBuilder builder) {
-		return builder.routes().route(p -> p.path("/currency-exchange").uri("lb://currency-exchange"))
-				.route(p -> p.path("/currency-conversion-feign").uri("lb://currency-conversion"))
-				.route(p -> p.path("/currency-conversion")
-						.filters(f -> f.rewritePath("/currency-conversion", "/currency-conversion-feign"))
-						.uri("lb://currency-conversion"))
-				.route(p -> p.path("/users/**").uri("lb://users-service"))
-				.build();
-	}
+    @Bean
+    RouteLocator gatewayRouting(RouteLocatorBuilder builder) {
+        return builder.routes()
+
+                .route(p -> p.path("/currency-exchange")
+                        .uri("lb://currency-exchange"))
+
+                .route(p -> p.path("/currency-conversion-feign")
+                        .uri("lb://currency-conversion"))
+
+                .route(p -> p.path("/currency-conversion")
+                        .uri("lb://currency-conversion"))
+
+                .route(p -> p.path("/users/**")
+                        .uri("lb://users-service"))
+
+                .build();
+    }
 }

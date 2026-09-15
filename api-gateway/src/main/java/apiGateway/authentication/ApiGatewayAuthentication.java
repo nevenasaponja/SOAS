@@ -2,6 +2,7 @@ package apiGateway.authentication;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -17,64 +18,195 @@ import api.dtos.UserDto;
 @EnableWebFluxSecurity
 public class ApiGatewayAuthentication {
 
-	@Bean
-	SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
+    @Bean
+    SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
 
-	    return http
-	            .csrf(csrf -> csrf.disable())
-	            .authorizeExchange(exchange -> exchange
+        return http
+                .csrf(csrf -> csrf.disable())
 
-	                    // Fiat exchange
-	                    .pathMatchers("/currency-exchange/**")
-	                    .hasAnyRole("OWNER", "ADMIN", "USER")
+                .authorizeExchange(exchange -> exchange
 
-	                    // Crypto exchange
-	                    .pathMatchers("/crypto-exchange/**")
-	                    .hasAnyRole("OWNER", "ADMIN", "USER")
+                        // CURRENCY EXCHANGE
+                        .pathMatchers("/currency-exchange/**")
+                        .hasAnyRole("OWNER", "ADMIN", "USER")
 
-	                    // Fiat conversion
-	                    .pathMatchers("/currency-conversion/**")
-	                    .hasRole("USER")
+                        // CRYPTO EXCHANGE
+                        .pathMatchers("/crypto-exchange/**")
+                        .hasAnyRole("OWNER", "ADMIN", "USER")
 
-	                    // Crypto conversion
-	                    .pathMatchers("/crypto-conversion/**")
-	                    .hasRole("USER")
+                        // CURRENCY CONVERSION
+                        .pathMatchers("/currency-conversion/**")
+                        .hasRole("USER")
 
-	                    // Bank account
-	                    .pathMatchers("/bank-accounts/**")
-	                    .hasAnyRole("ADMIN", "USER")
+                        // CRYPTO CONVERSION
+                        .pathMatchers("/crypto-conversion/**")
+                        .hasRole("USER")
 
-	                    // Crypto wallet
-	                    .pathMatchers("/crypto-wallets/**")
-	                    .hasAnyRole("ADMIN", "USER")
 
-	                    // Users
-	                    .pathMatchers("/users/**")
-	                    .hasAnyRole("OWNER", "ADMIN")
+                        // =========================
+                        // BANK ACCOUNT
+                        // =========================
 
-	                    .anyExchange()
-	                    .authenticated()
-	            )
-	            .httpBasic(Customizer.withDefaults())
-	            .build();
-	}
+                        // USER moze samo svoj racun
+                        .pathMatchers(
+                                HttpMethod.GET,
+                                "/bank-accounts/my-account")
+                        .hasRole("USER")
+
+                        // ADMIN moze da pregleda sve racune
+                        .pathMatchers(
+                                HttpMethod.GET,
+                                "/bank-accounts")
+                        .hasRole("ADMIN")
+
+                        // ADMIN moze da pregleda racun po email-u
+                        .pathMatchers(
+                                HttpMethod.GET,
+                                "/bank-accounts/email")
+                        .hasRole("ADMIN")
+
+                        // ADMIN moze da napravi racun
+                        .pathMatchers(
+                                HttpMethod.POST,
+                                "/bank-accounts")
+                        .hasRole("ADMIN")
+
+                        // ADMIN moze da azurira racun
+                        .pathMatchers(
+                                HttpMethod.PUT,
+                                "/bank-accounts")
+                        .hasRole("ADMIN")
+
+                        // Brisanje se radi interno iz UsersService
+                        .pathMatchers(
+                                HttpMethod.DELETE,
+                                "/bank-accounts")
+                        .denyAll()
+
+                        // Sve ostalo za Bank Account zabranjeno
+                        .pathMatchers("/bank-accounts/**")
+                        .denyAll()
+
+
+                        // =========================
+                        // CRYPTO WALLET
+                        // =========================
+
+                        // USER moze samo svoj wallet
+                        .pathMatchers(
+                                HttpMethod.GET,
+                                "/crypto-wallets/my-wallet")
+                        .hasRole("USER")
+
+                        // ADMIN moze da pregleda sve wallet-e
+                        .pathMatchers(
+                                HttpMethod.GET,
+                                "/crypto-wallets")
+                        .hasRole("ADMIN")
+
+                        // ADMIN moze da pregleda wallet po email-u
+                        .pathMatchers(
+                                HttpMethod.GET,
+                                "/crypto-wallets/email")
+                        .hasRole("ADMIN")
+
+                        // ADMIN moze da napravi wallet
+                        .pathMatchers(
+                                HttpMethod.POST,
+                                "/crypto-wallets")
+                        .hasRole("ADMIN")
+
+                        // ADMIN moze da azurira wallet
+                        .pathMatchers(
+                                HttpMethod.PUT,
+                                "/crypto-wallets")
+                        .hasRole("ADMIN")
+
+                        // Brisanje se radi interno iz UsersService
+                        .pathMatchers(
+                                HttpMethod.DELETE,
+                                "/crypto-wallets")
+                        .denyAll()
+
+                        // Sve ostalo za Crypto Wallet zabranjeno
+                        .pathMatchers("/crypto-wallets/**")
+                        .denyAll()
+
+
+                        // TRADE SERVICE
+                        .pathMatchers("/trade-service/**")
+                        .hasRole("USER")
+
+
+                        // =========================
+                        // USERS SERVICE
+                        // =========================
+
+                        .pathMatchers(
+                                HttpMethod.POST,
+                                "/users/newOwner")
+                        .hasRole("OWNER")
+
+                        .pathMatchers(
+                                HttpMethod.POST,
+                                "/users/newAdmin")
+                        .hasRole("OWNER")
+
+                        .pathMatchers(
+                                HttpMethod.POST,
+                                "/users/newUser")
+                        .hasAnyRole("OWNER", "ADMIN")
+
+                        .pathMatchers(
+                                HttpMethod.PUT,
+                                "/users")
+                        .hasAnyRole("OWNER", "ADMIN")
+
+                        .pathMatchers(
+                                HttpMethod.DELETE,
+                                "/users")
+                        .hasRole("OWNER")
+
+                        .pathMatchers(
+                                HttpMethod.GET,
+                                "/users")
+                        .hasAnyRole("OWNER", "ADMIN")
+
+                        .pathMatchers(
+                                HttpMethod.GET,
+                                "/users/email")
+                        .hasAnyRole("OWNER", "ADMIN")
+
+                        .pathMatchers("/users/**")
+                        .hasRole("OWNER")
+
+                        .anyExchange()
+                        .authenticated()
+                )
+
+                .httpBasic(Customizer.withDefaults())
+                .build();
+    }
 
     @Bean
-    ReactiveUserDetailsService reactiveUserDetailsService(WebClient.Builder webClientBuilder,
-                                                          BCryptPasswordEncoder encoder) {
+    ReactiveUserDetailsService reactiveUserDetailsService(
+            WebClient.Builder webClientBuilder,
+            BCryptPasswordEncoder encoder) {
 
         WebClient client = webClientBuilder
-                .baseUrl("http://localhost:8770")
+                .baseUrl("http://users-service:8770")
                 .build();
 
-        return user -> client.get()
+        return user -> client
+                .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/users/email")
                         .queryParam("email", user)
                         .build())
                 .retrieve()
                 .bodyToMono(UserDto.class)
-                .map(dto -> User.withUsername(dto.getEmail())
+                .map(dto -> User
+                        .withUsername(dto.getEmail())
                         .password(encoder.encode(dto.getPassword()))
                         .roles(dto.getRole())
                         .build());

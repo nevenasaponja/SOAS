@@ -1,4 +1,9 @@
-FROM openjdk:17
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY target/api-gateway-1.0.0.jar api-gateway.jar
+
 EXPOSE 8765
-ADD target/api-gateway-1.0.0.jar /app/api-gateway.jar
-ENTRYPOINT [ "java", "-jar", "/app/api-gateway.jar" ]
+
+ENTRYPOINT ["java", "-jar", "api-gateway.jar"]

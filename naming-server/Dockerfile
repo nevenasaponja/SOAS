@@ -1,4 +1,9 @@
-FROM openjdk:17
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY target/naming-server-1.0.0.jar naming-server.jar
+
 EXPOSE 8761
-ADD target/naming-server-1.0.0.jar /app/naming-server.jar
-ENTRYPOINT [ "java", "-jar", "/app/naming-server.jar" ]
+
+ENTRYPOINT ["java", "-jar", "naming-server.jar"]

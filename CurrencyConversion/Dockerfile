@@ -1,4 +1,9 @@
-FROM openjdk:17
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY target/currency-conversion-1.0.0.jar currency-conversion.jar
+
 EXPOSE 8100
-ADD target/currency-conversion-1.0.0.jar /app/currency-conversion.jar
-ENTRYPOINT [ "java", "-jar", "/app/currency-conversion.jar" ]
+
+ENTRYPOINT ["java", "-jar", "currency-conversion.jar"]
