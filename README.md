@@ -6,17 +6,11 @@
 
 
 
-Otvoriti CMD i pozicionirati se u glavni folder projekta:
-
 
 
 cd C:\\Users\\Nevena\\Downloads\\Vezbe-master\\Vezbe-master
 
 
-
-
-
-Servise pokretati jedan po jedan sledećim redosledom:
 
 
 
@@ -57,16 +51,6 @@ docker compose up -d --no-deps trade-service
 
 
 docker compose up -d --no-deps api-gateway
-
-
-
-
-
-Provera pokrenutih kontejnera:
-
-
-
-docker compose ps
 
 
 
@@ -228,22 +212,6 @@ password
 
 
 
-Za sve zahteve preko API Gateway-a koristi se:
-
-
-
-Postman -> Authorization -> Basic Auth
-
-
-
-Username = email korisnika
-
-Password = password
-
-
-
-
-
 
 
 ==================================================
@@ -349,12 +317,6 @@ user@uns.ac.rs - USER
 ==================================================
 
 
-
-NAPOMENA:
-
-Ovo nije potrebno za osnovni user@uns.ac.rs ako je već učitan iz data.sql.
-
-Koristi se za proveru automatskog kreiranja Bank Account-a i Crypto Wallet-a.
 
 
 
@@ -1056,20 +1018,6 @@ password
 
 
 
-Primer:
-
-
-
-EUR -> RSD
-
-
-
-exchangeRate = 117
-
-
-
-
-
 
 
 ==================================================
@@ -1184,14 +1132,6 @@ password
 
 
 
-Očekivana poruka:
-
-
-
-User does not have enough money on bank account
-
-
-
 
 
 PROVERA NEISPRAVNE KOLIČINE:
@@ -1228,10 +1168,6 @@ password
 
 
 
-Očekuje se BAD\_REQUEST i poruka da quantity mora biti veći od nule.
-
-
-
 
 
 ADMIN ne sme da koristi Currency Conversion.
@@ -1243,16 +1179,6 @@ Ako se isti zahtev pošalje kao:
 
 
 admin@uns.ac.rs
-
-
-
-treba da se dobije:
-
-
-
-403 Forbidden
-
-
 
 
 
@@ -1386,6 +1312,28 @@ Uspešno je izvršena razmena 0.001 BTC za 0.01500 ETH
 
 
 
+PROVERA
+
+
+
+GET
+
+http://localhost:8765/crypto-wallets/email?email=user@uns.ac.rs
+
+
+
+Username:
+
+admin@uns.ac.rs
+
+
+
+Password:
+
+password
+
+
+
 
 
 PROVERA NEDOVOLJNO CRYPTO SREDSTAVA:
@@ -1422,25 +1370,11 @@ password
 
 
 
-Očekivano:
-
-
-
-User does not have enough crypto on wallet
-
 
 
 
 
 ADMIN korisnik ne sme da izvršava Crypto Conversion.
-
-
-
-Očekivani HTTP status:
-
-
-
-403 Forbidden
 
 
 
@@ -1525,6 +1459,40 @@ Nakon transakcije:
 \- EUR stanje se smanjuje
 
 \- BTC stanje se povećava
+
+
+
+PROVERA 
+
+
+
+GET
+
+http://localhost:8765/bank-accounts/email?email=user@uns.ac.rs
+
+Username:
+
+admin@uns.ac.rs
+
+
+
+Password:
+
+password
+
+
+
+http://localhost:8765/crypto-wallets/email?email=user@uns.ac.rs
+
+Username:
+
+admin@uns.ac.rs
+
+
+
+Password:
+
+password
 
 
 
@@ -1748,25 +1716,11 @@ Primer uspešnog rezultata:
 
 
 
-API Gateway koristi Basic Authentication.
-
-
-
-Ako se zahtev pošalje bez Basic Auth podataka očekuje se:
-
-
-
-401 Unauthorized
-
-
-
 
 
 USER nema pristup administraciji korisnika.
 
 
-
-Na primer:
 
 
 
@@ -2070,71 +2024,11 @@ Korisnik više ne treba da postoji.
 
 
 
-==================================================
-
-24\. EUREKA NAMING SERVER
-
-==================================================
-
-
-
-Otvoriti u browseru:
-
-
-
-http://localhost:8761
-
-
-
-
-
-U Eureki treba proveriti da li su registrovani mikroservisi:
-
-
-
-USERS-SERVICE
-
-
-
-CURRENCY-EXCHANGE
-
-
-
-CURRENCY-CONVERSION
-
-
-
-BANK-ACCOUNT
-
-
-
-CRYPTO-WALLET
-
-
-
-CRYPTO-EXCHANGE
-
-
-
-CRYPTO-CONVERSION
-
-
-
-TRADE-SERVICE
-
-
-
-API-GATEWAY
-
-
-
-
-
 
 
 ==================================================
 
-25\. DOCKER
+24\. DOCKER
 
 ==================================================
 
@@ -2191,118 +2085,6 @@ nevenasaponja/trade-service:latest
 
 
 nevenasaponja/api-gateway:latest
-
-
-
-
-
-
-
-==================================================
-
-26\. GLAVNI URL-OVI ZA ODBRANU
-
-==================================================
-
-
-
-Eureka:
-
-
-
-http://localhost:8761
-
-
-
-
-
-Users:
-
-
-
-http://localhost:8765/users
-
-
-
-
-
-Currency Exchange:
-
-
-
-http://localhost:8765/currency-exchange?from=EUR\&to=RSD
-
-
-
-
-
-Currency Conversion:
-
-
-
-http://localhost:8765/currency-conversion?from=EUR\&to=RSD\&quantity=10
-
-
-
-
-
-Bank Account:
-
-
-
-http://localhost:8765/bank-accounts/my-account
-
-
-
-
-
-Crypto Wallet:
-
-
-
-http://localhost:8765/crypto-wallets/my-wallet
-
-
-
-
-
-Crypto Exchange:
-
-
-
-http://localhost:8765/crypto-exchange?from=BTC\&to=ETH
-
-
-
-
-
-Crypto Conversion:
-
-
-
-http://localhost:8765/crypto-conversion?from=BTC\&to=ETH\&quantity=0.001
-
-
-
-
-
-Trade EUR -> BTC:
-
-
-
-http://localhost:8765/trade-service?from=EUR\&to=BTC\&quantity=10
-
-
-
-
-
-Trade BTC -> EUR:
-
-
-
-http://localhost:8765/trade-service?from=BTC\&to=EUR\&quantity=0.001
-
-
 
 
 
